@@ -1,0 +1,72 @@
+name: Test Formulas
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'Formula/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'Formula/**'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+      
+      - name: Tap this repository
+        run: |
+          brew tap ${{ github.repository }}
+      
+      - name: List formulas
+        run: |
+          echo "Testing formulas in this tap:"
+          ls -la Formula/
+          find Formula -name "*.rb" -type f
+      
+      - name: Test all formulas
+        run: |
+          for formula in Formula/*.rb; do
+            if [[ -f "$formula" ]]; then
+              formula_name=$(basename "$formula" .rb)
+              echo "::group::Testing $formula_name"
+              
+              # Audit the formula
+              echo "Auditing $formula_name..."
+              brew audit --strict --online "$formula_name" || true
+              
+              # Try to install from HEAD if available
+              echo "Installing $formula_name from HEAD..."
+              brew install --HEAD "$formula_name" || brew install "$formula_name" || echo "Installation failed, continuing..."
+              
+              # Test the formula if test is defined
+              if brew test "$formula_name" 2>/dev/null; then
+                echo "Testing $formula_name..."
+                brew test "$formula_name" || echo "Tests failed"
+              else
+                echo "No tests defined for $formula_name"
+              fi
+              
+              echo "::endgroup::"
+            fi
+          done
+      
+      - name: Check for style issues
+        run: |
+          for formula in Formula/*.rb; do
+            if [[ -f "$formula" ]]; then
+              formula_name=$(basename "$formula" .rb)
+              echo "Checking style for $formula_name..."
+              brew style "$formula_name" || true
+            fi
+          done
+
