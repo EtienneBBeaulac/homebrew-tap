@@ -1,12 +1,10 @@
 class GitWorktrees < Formula
   desc "Simple shell helpers for Git worktrees with fzf integration"
   homepage "https://github.com/EtienneBBeaulac/git-worktrees"
-  # Note: Update URL and sha256 when you create a release
-  # url "https://github.com/EtienneBBeaulac/git-worktrees/archive/refs/tags/v1.0.0.tar.gz"
-  # sha256 "abc123..."
+  url "https://github.com/EtienneBBeaulac/git-worktrees/archive/refs/tags/v1.0.0.tar.gz"
+  sha256 "960dc70f03dc2211db9bc81d7c5a4e2fcd38b33e10a8b6912a8676f02a4e36d9"
   license "MIT"
   
-  # For now, install from HEAD until first release is created
   head "https://github.com/EtienneBBeaulac/git-worktrees.git", branch: "main"
 
   depends_on "fzf" => :recommended
